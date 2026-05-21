@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Ubunatic Coding</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+                text-align: left;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 50px auto;
+                padding: 20px;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            img {
+                border-radius: 50%;
+                width: 120px;
+                height: 120px;
+            }
+            h1 {
+                margin: 10px 0;
+                color: #0073e6;
+            }
+            h2 {
+                margin: 5px 0;
+                font-size: 1.2em;
+                color: #555;
+            }
+            p {
+                font-size: 1em;
+                margin: 10px 0;
+                text-align: left;
+            }
+            a {
+                display: inline-block;
+                margin: 10px;
+                text-decoration: none;
+                color: #0073e6;
+                font-weight: bold;
+            }
+            hr {
+                border: none;
+                border-top: 1px solid #ccc;
+                margin: 10px 0;
+            }
+            .label {
+                min-width: 20em;
+            }
+            .disclaimer {
+                font-size: 0.8em;
+                margin-top: 20px;
+                color: #777;
+            }
+            /* Skills Matrix Styling */
+            .skills-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .skill-tag {
+                background: #eef6ff;
+                border: 1px solid #0073e6;
+                color: #0073e6;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.9em;
+                font-weight: bold;
+            }
+            .skill-category {
+                margin-top: 20px;
+                border-left: 3px solid #0073e6;
+                padding-left: 15px;
+            }
+            .skill-category h3 {
+                font-size: 1em;
+                margin: 0 0 10px 0;
+                color: #333;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <img
+                src="data:image/png;base64,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"
+                alt="Ubunatic Avatar"
+            />
+            <h1>Ubunatic Coding</h1>
+            <h2>Personal Homepage</h2>
+            <hr />
+            <section id="profile">
+                <p>
+                    <strong class="label">Profile:</strong> Cloud/Data Architect
+                </p>
+                <p>
+                    <strong class="label">Education:</strong> Doctorate
+                    (Dr.-Ing.) in Data Management and Data Visualization
+                </p>
+                <p>
+                    <strong class="label">Mission:</strong> Providing paved
+                    roads for humans and AI to facilitate secure and sustainable
+                    software solutions.
+                </p>
+
+                <p>
+                    <strong class="label">Engineering Principle:</strong> Spec
+                    just enough, code for quality, verify and fail fast,
+                    iterate, succeed!
+                </p>
+                <p>
+                    <strong class="label"
+                        >Agentic Engineering Principle:</strong
+                    >
+                    Do not automate the creation before you automate the
+                    verification!
+                </p>
+
+                <p>
+                    <strong class="label">Public Profiles:</strong>
+                    <a
+                        href="https://bsky.app/profile/ubunatic.com"
+                        target="_blank"
+                        rel="me noopener"
+                        >Bluesky</a
+                    >
+                    |
+                    <a
+                        href="https://github.com/ubunatic"
+                        target="_blank"
+                        rel="me noopener"
+                        >GitHub</a
+                    >
+                    |
+                    <a
+                        href="https://scholar.google.com/citations?user=Y_O1dGcAAAAJ"
+                        target="_blank"
+                        rel="noopener"
+                        >Google Scholar</a
+                    >
+                    |
+                    <a
+                        href="https://www.linkedin.com/in/uwejugel"
+                        target="_blank"
+                        rel="noopener"
+                        >LinkedIn</a
+                    >
+                </p>
+            </section>
+            <hr />
+
+            <section id="skills">
+                <div class="skill-category">
+                    <h3>Architecture & Data</h3>
+                    <div class="skills-grid">
+                        <span class="skill-tag">Cloud Architecture</span>
+                        <span class="skill-tag">Data Management</span>
+                        <span class="skill-tag">Scalable Systems</span>
+                        <span class="skill-tag">Data Visualization</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Agentic & Software Engineering</h3>
+                    <div class="skills-grid">
+                        <span class="skill-tag">Automated Verification</span>
+                        <span class="skill-tag">AI-Assisted Dev</span>
+                        <span class="skill-tag">CI/CD Pipelines</span>
+                        <span class="skill-tag">Quality-First Coding</span>
+                    </div>
+                </div>
+            </section>
+            <hr />
+
+            <section id="go-packages">
+                <div class="skill-category">
+                    <h3>Go Packages</h3>
+                    <div class="skills-grid">
+                        <a href="https://ubunatic.com/rpi-exporter" class="skill-tag">ubunatic.com/rpi-exporter</a>
+                    </div>
+                </div>
+            </section>
+            <hr />
+
+            <section id="disclaimer">
+                <div class="legal-notice">
+                    <p class="disclaimer">
+                        <span class="lang-en">
+                            <strong>Disclaimer:</strong> This website is purely
+                            private with no commercial intent. Hosted in
+                            Germany. No cookies, no scripts, no external content
+                            tracking.<br />
+                            Visit external pages at your own risk.
+                        </span>
+                        <br /><br />
+                        <span class="lang-de">
+                            <strong>Impressum/Hinweis:</strong> Rein private
+                            Seite ohne geschäftsmäßige Interessen. Hosting in
+                            Deutschland. Keine Cookies, keine Skripte, kein
+                            Nachladen externer Inhalte.<br />
+                            Besuch externer Links auf eigenes Risiko.
+                        </span>
+                    </p>
+                </div>
+            </section>
+        </div>
+    </body>
+</html>
