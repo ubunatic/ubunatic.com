@@ -1,0 +1,104 @@
+name: Codeberg Sync
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+  CODEBERG_USER: ubunatic
+  REPO_NAME: ${{ github.event.repository.name }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Skip running if it's a PR from a fork, as secrets aren't available
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-index-
+
+      - name: Cache cargo binaries
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-forgejo-cli
+
+      - name: Install forgejo-cli
+        run: |
+          if [ ! -f "$HOME/.cargo/bin/fj" ]; then
+            cargo install forgejo-cli --locked
+          fi
+          # Ensure it's in the PATH just in case
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup git and codeberg auth
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git remote add codeberg https://${CODEBERG_USER}:${CODEBERG_TOKEN}@codeberg.org/${CODEBERG_USER}/${REPO_NAME}.git
+
+          # Auth with forgejo-cli
+          echo "${CODEBERG_TOKEN}" | fj auth add-key codeberg.org ${CODEBERG_USER}
+
+      - name: Mirror feature branch
+        if: github.event_name == 'push'
+        run: |
+          # Push the branch to Codeberg
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          git push codeberg HEAD:refs/heads/${BRANCH_NAME} --force
+
+      - name: Mirror Pull Request
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_PR_TITLE: ${{ github.event.pull_request.title }}
+          GITHUB_PR_BODY: ${{ github.event.pull_request.body }}
+          GITHUB_PR_HTML_URL: ${{ github.event.pull_request.html_url }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Fetch and push the PR head branch to Codeberg using a safe, unique PR namespace
+          # This avoids clobbering branches like 'main' and avoids fetch failures.
+          SAFE_HEAD_REF="pr-${PR_NUMBER}"
+
+          git fetch origin pull/${PR_NUMBER}/head:${SAFE_HEAD_REF}
+          git checkout ${SAFE_HEAD_REF}
+          git push codeberg HEAD:refs/heads/${SAFE_HEAD_REF} --force
+
+          # Check if PR already exists to avoid errors on 'synchronize' event
+          # We search for open PRs with the same head branch
+          # Using search requires knowing how fj outputs, but we can just try to create it
+          # and ignore errors if it already exists.
+
+          # Write PR body securely
+          printf "%s\n" "$GITHUB_PR_BODY" > pr_body.txt
+          echo "" >> pr_body.txt
+          echo "*Mirrored from GitHub PR: $GITHUB_PR_HTML_URL*" >> pr_body.txt
+
+          # Create PR on Codeberg. If it fails, it might already exist.
+          fj pr create "$GITHUB_PR_TITLE" \
+            --repo "${CODEBERG_USER}/${REPO_NAME}" \
+            --head "${SAFE_HEAD_REF}" \
+            --base "${BASE_REF}" \
+            --body "$(cat pr_body.txt)" || echo "PR might already exist or failed to create."
